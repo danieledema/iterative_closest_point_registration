@@ -9,6 +9,7 @@ edition = "2021"
 kiddo = "0.2.4"
 nalgebra = "0.31.4"
 navigation-core = {git = "ssh://git@github.com:22/experience-based-navigation/navigation-core.git"}
+rayon = "1.6.1"
 serde = "1.0.149"
 serde_json = "1.0.89"
 
@@ -17,6 +18,12 @@ criterion = {version = "0.3", features = ["html_reports"]}
 pointcloud_drivers = {git = "ssh://git@github.com:22/experience-based-navigation/pointcloud_drivers.git"}
 approx = "*"
 
+[profile.bench]
+debug = true
+
 [[bench]]
 name = "icp"
 harness = false
+
+[[example]]
+name = "robotcar"
