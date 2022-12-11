@@ -1,13 +1,15 @@
 use std::f32::INFINITY;
 
-use nalgebra::{distance, Isometry3, Matrix3, Point3, Quaternion, Rotation3, Vector3, SVD};
+use rayon::prelude::*;
+
+use nalgebra::{Isometry3, Matrix3, Point3, Quaternion, Rotation3, Vector3, SVD};
 use navigation_core::{
     domain::{timestamp::TimeStamp, transformation::Transformation},
     ports::{odometry::Odometry, sensor_input::SensorData},
 };
 
-use kiddo::KdTree;
 use kiddo::distance::squared_euclidean;
+use kiddo::KdTree;
 
 use crate::pointcloud::PointCloudXYZ;
 
@@ -121,16 +123,16 @@ impl IterativeClosestPoint {
             kdtree.add(&[p[0], p[1], p[2]], i).unwrap();
         }
 
-        let mut matches = vec![];
-        for (i, p) in pointcloud_pre.data.iter().enumerate() {
-            let p = [p[0], p[1], p[2]];
-            let nearest = kdtree.nearest(&p, 1, &squared_euclidean).unwrap();
-            if nearest.len() > 0 {
-                matches.push((i, nearest[0].1.clone()));
-            }
-        }
-
-        return matches;
+        pointcloud_pre
+            .data
+            .par_iter()
+            .enumerate()
+            .map(|(i, p)| {
+                let p = [p[0], p[1], p[2]];
+                let nearest = kdtree.nearest(&p, 1, &squared_euclidean).unwrap();
+                (i, nearest[0].1.clone())
+            })
+            .collect()
     }
 }
 
